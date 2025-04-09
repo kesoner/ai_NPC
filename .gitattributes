@@ -1,0 +1,51 @@
+#!Assets = 2308.tw, 00000.tw
+#!Freq = d
+
+from apexart.art_global import *
+import apexart.art_calc as ac
+import time
+
+
+def initialize(context):
+    context.start_time = time.time()
+    context.stocks = ['2308.tw']
+    context.frequency = ['d']
+    context.dataitems = []
+
+    # 投組變數啟始
+    context.tradecodes = []
+    context._okTrade = True
+    context.watchcode1 = '2308.tw'
+    context.tradecode1 = '2308.tw'
+    context.stocks.append(context.tradecode1)
+    context.portfolio.starting_cash = 10000000
+    context.bench_mark = '00000.tw'
+    context.dayrange = ['2020-07-01','2020-12-31']
+
+def terminate(context):
+    log.info('terminate @ [%s]' % context.currenttime)
+    log.info(context.portfolio.brief)
+    log.info('PFL Value: %s' % context.portfolio.portfolio_value)
+    log.info('return: %s' % context.portfolio.returns)
+    elapsed_time = time.time() - context.start_time
+    log.info('Elapse:%s' % elapsed_time)
+
+def handle_bar(context, data, symbol, frequency):
+    if symbol == context.watchcode1 and frequency == "d":
+        log.info(context.portfolio.position(context.tradecode1, 'amount'))
+        if context.portfolio.position(context.tradecode1, 'amount') == 0:
+          if ac.ti_kd_cross(context._data, symbol, frequency, 14, "GoldCross"):
+            order(context.tradecode1, 1000, note = "ROD")
+          if ac.ti_kd_cross(context._data, symbol, frequency, 14, "DeadCross"):
+            order(context.tradecode1, -1000, note = "ROD")
+        elif context.portfolio.position(context.tradecode1, 'amount') > 0:
+          if ac.ti_kd_cross(context._data, symbol, frequency, 14, "DeadCross"):
+            order(context.tradecode1, -1000, note = "ROD")
+        elif context.portfolio.position(context.tradecode1, 'amount') < 0:
+          if ac.ti_kd_cross(context._data, symbol, frequency, 14, "DeadCross"):
+            order(context.tradecode1, 1000, note = "ROD")
+
+def handle_order_report(context, report):
+    rptKey = report["key"]
+    log.info(context.currenttime)
+    log.info("handle_order_report [%s] @ [%s]" % (report, context.currenttime))
