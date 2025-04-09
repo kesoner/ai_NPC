@@ -75,4 +75,4 @@ python main.py
 
 ## 聯絡方式
 
-[聯絡資訊] 
+[聯絡資訊] Line ID：kesoner666
